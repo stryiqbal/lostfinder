@@ -13,8 +13,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // 1. Pengecualian CSRF untuk API
         $middleware->validateCsrfTokens(except: [
             'api/*',
+        ]);
+
+        // 2. Tambahkan / Aktifkan CORS untuk mengizinkan akses dari Flutter Web
+        $middleware->api(prepend: [
+            \Illuminate\Http\Middleware\HandleCors::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

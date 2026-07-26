@@ -33,10 +33,14 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(content: Text('Selamat Datang, ${userData['name']}!')),
       );
 
+      // 🔄 Navigator diperbarui dengan menambahkan currentUserId
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeScreenWithRole(currentUserRole: userData['role']),
+          builder: (context) => HomeScreenWithRole(
+            currentUserRole: userData['role'],
+            currentUserId: userData['id'], // 👈 Ditambahkan di sini
+          ),
         ),
       );
     } else {

@@ -5,8 +5,9 @@ class ItemModel {
   final String location;
   final String status;
   final String userName;
+  final String? image;
 
-  ItemModel({required this.id, required this.title, required this.category, required this.location, required this.status, required this.userName});
+  ItemModel({required this.id, required this.title, required this.category, required this.location, required this.status, required this.userName, this.image,});
 
   factory ItemModel.fromJson(Map<String, dynamic> json) {
     return ItemModel(
@@ -16,6 +17,7 @@ class ItemModel {
       location: json['location'],
       status: json['status'],
       userName: json['user'] != null ? json['user']['name'] : 'Anonim',
+      image: json['image'],
     );
   }
 }
