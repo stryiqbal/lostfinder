@@ -35,6 +35,11 @@ class HomeScreenWithRole extends StatefulWidget {
 
 class _HomeScreenWithRoleState extends State<HomeScreenWithRole> {
   late Future<List<ItemModel>> futureItems;
+  List<ItemModel> _allItems = [];     // Menyimpan seluruh data asli dari API
+  List<ItemModel> _filteredItems = []; // Menyimpan data hasil filter pencarian
+
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false; // Status apakah search bar sedang terbuka/aktif
 
   @override
   void initState() {
@@ -44,7 +49,29 @@ class _HomeScreenWithRoleState extends State<HomeScreenWithRole> {
 
   void _refreshItems() {
     setState(() {
-      futureItems = ApiService.getItems();
+      futureItems = ApiService.getItems().then((items) {
+        _allItems = items;
+        _filteredItems = items; // Default tampilan berisi seluruh data
+        return items;
+      });
+    });
+  }
+
+  // 🔍 Fungsi Filter Laporan berdasarkan Title atau Location
+  void _filterItems(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredItems = _allItems;
+      } else {
+        _filteredItems = _allItems.where((item) {
+          final titleLower = item.title.toLowerCase();
+          final locationLower = item.location.toLowerCase();
+          final searchLower = query.toLowerCase();
+
+          return titleLower.contains(searchLower) ||
+              locationLower.contains(searchLower);
+        }).toList();
+      }
     });
   }
 
@@ -190,60 +217,96 @@ class _HomeScreenWithRoleState extends State<HomeScreenWithRole> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('LostFinder - (${widget.currentUserRole.toUpperCase()})'),
-        backgroundColor: widget.currentUserRole == 'admin' ? Colors.redAccent : Colors.blueAccent,
-        actions: [
-          // 🔄 Tombol Refresh
-          IconButton(
-            icon: const Icon(Icons.refresh), 
-            onPressed: _refreshItems,
-            tooltip: 'Refresh Data',
-          ),
-
-          // 🚪 TOMBOL LOGOUT
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-            onPressed: () async {
-              // Tampilkan konfirmasi Logout
-              bool confirm = await showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Konfirmasi Logout'),
-                  content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Batal'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                      child: const Text('Logout'),
-                    ),
-                  ],
+        // 🔍 Jika mode search aktif, tampilkan TextField, jika tidak tampilkan Judul
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  hintText: 'Cari barang atau lokasi...',
+                  hintStyle: TextStyle(color: Colors.white70),
+                  border: InputBorder.none,
                 ),
-              ) ?? false;
-
-              if (confirm && mounted) {
-                // Memanggil method logout dari ApiService jika ada
-                await ApiService.logout();
-
-                if (mounted) {
-                  // Navigasi kembali ke LoginScreen dan hapus semua history stack halaman
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    (route) => false,
-                  );
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Berhasil keluar dari akun.')),
-                  );
+                onChanged: _filterItems, // 👈 Panggil filter setiap kali mengetik
+              )
+            : Text('LostFinder - (${widget.currentUserRole.toUpperCase()})'),
+        backgroundColor: widget.currentUserRole == 'admin'
+            ? Colors.redAccent
+            : Colors.blueAccent,
+        actions: [
+          // 🔍 Tombol Cari / Tutup Cari
+          IconButton(
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
+            onPressed: () {
+              setState(() {
+                if (_isSearching) {
+                  _isSearching = false;
+                  _searchController.clear();
+                  _filteredItems = _allItems; // Reset pencarian
+                } else {
+                  _isSearching = true;
                 }
-              }
+              });
             },
+            tooltip: _isSearching ? 'Tutup Pencarian' : 'Cari',
           ),
+
+          // 🔄 Tombol Refresh (Sembunyikan saat sedang searching)
+          if (!_isSearching)
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _refreshItems,
+              tooltip: 'Refresh Data',
+            ),
+
+          // 🚪 Tombol Logout (Sembunyikan saat sedang searching)
+          if (!_isSearching)
+            IconButton(
+              icon: const Icon(Icons.logout),
+              tooltip: 'Logout',
+              onPressed: () async {
+                bool confirm = await showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Konfirmasi Logout'),
+                        content: const Text(
+                            'Apakah Anda yakin ingin keluar dari aplikasi?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Batal'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red),
+                            child: const Text('Logout'),
+                          ),
+                        ],
+                      ),
+                    ) ??
+                    false;
+
+                if (confirm && mounted) {
+                  await ApiService.logout();
+
+                  if (mounted) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginScreen()),
+                      (route) => false,
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Berhasil keluar dari akun.')),
+                    );
+                  }
+                }
+              },
+            ),
         ],
       ),
       body: FutureBuilder<List<ItemModel>>(
@@ -253,24 +316,30 @@ class _HomeScreenWithRoleState extends State<HomeScreenWithRole> {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          } else if (_allItems.isEmpty) {
             return const Center(child: Text('Belum ada laporan barang.'));
+          } else if (_filteredItems.isEmpty) {
+            // 🔍 Tampilan jika hasil pencarian tidak ditemukan
+            return const Center(
+              child: Text('Barang yang dicari tidak ditemukan.'),
+            );
           }
 
-          final items = snapshot.data!;
+          // 👈 Tampilkan data dari _filteredItems (bukan snapshot.data!)
           return ListView.builder(
-            itemCount: items.length,
+            itemCount: _filteredItems.length,
             itemBuilder: (context, index) {
-              final item = items[index];
+              final item = _filteredItems[index];
               return Card(
                 margin: const EdgeInsets.all(8),
                 child: ListTile(
-                  // 🖼️ Tampilkan Foto Barang jika ada, jika tidak tampilkan ikon bawaan
                   leading: item.image != null && item.image!.isNotEmpty
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.network(
-                            item.image!,
+                            item.image!.startsWith('http')
+                                ? item.image!
+                                : 'http://127.0.0.1:8000/storage/${item.image}',
                             width: 50,
                             height: 50,
                             fit: BoxFit.cover,
@@ -298,7 +367,7 @@ class _HomeScreenWithRoleState extends State<HomeScreenWithRole> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // 🏷️ CHIP STATUS (Klik untuk Admin mengubah status)
+                      // 🏷️ CHIP STATUS
                       InkWell(
                         onTap: widget.currentUserRole == 'admin'
                             ? () async {
@@ -357,7 +426,8 @@ class _HomeScreenWithRoleState extends State<HomeScreenWithRole> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                            'Status diubah menjadi $selectedStatus!')),
+                                            'Status diubah menjadi $selectedStatus!'),
+                                      ),
                                     );
                                   }
                                 }
@@ -412,8 +482,9 @@ class _HomeScreenWithRoleState extends State<HomeScreenWithRole> {
                                 _refreshItems();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                      content:
-                                          Text('Laporan berhasil dihapus!')),
+                                    content:
+                                        Text('Laporan berhasil dihapus!'),
+                                  ),
                                 );
                               }
                             }
