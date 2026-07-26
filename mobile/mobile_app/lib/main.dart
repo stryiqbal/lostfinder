@@ -19,6 +19,138 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// 📄 WIDGET DETAIL BARANG
+class ItemDetailScreen extends StatelessWidget {
+  final ItemModel item;
+
+  const ItemDetailScreen({super.key, required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(item.title),
+        backgroundColor: Colors.blueAccent,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 🖼️ FOTO BESAR BARANG
+            if (item.image != null && item.image!.isNotEmpty)
+              Image.network(
+                item.image!.startsWith('http')
+                    ? item.image!
+                    : 'http://127.0.0.1:8000/storage/${item.image}',
+                width: double.infinity,
+                height: 250,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  height: 200,
+                  color: Colors.grey.shade300,
+                  child: const Center(
+                    child: Icon(Icons.broken_image, size: 80, color: Colors.grey),
+                  ),
+                ),
+              )
+            else
+              Container(
+                height: 200,
+                color: Colors.blue.shade50,
+                child: Center(
+                  child: Icon(
+                    item.category == 'lost' ? Icons.search : Icons.check_circle,
+                    size: 80,
+                    color: item.category == 'lost' ? Colors.red : Colors.green,
+                  ),
+                ),
+              ),
+
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 🏷️ KATEGORI & STATUS
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Chip(
+                        avatar: Icon(
+                          item.category == 'lost' ? Icons.warning : Icons.verified,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        label: Text(
+                          item.category == 'lost' ? 'Barang Hilang' : 'Barang Ditemukan',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        backgroundColor: item.category == 'lost' ? Colors.redAccent : Colors.green,
+                      ),
+                      Chip(
+                        label: Text(
+                          item.status.toUpperCase(),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        backgroundColor: item.status == 'resolved'
+                            ? Colors.green
+                            : (item.status == 'active' ? Colors.blue : Colors.amber.shade700),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 📝 NAMA BARANG
+                  Text(
+                    item.title,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+
+                  const Divider(),
+
+                  // 📍 LOKASI
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.location_on, color: Colors.redAccent),
+                    title: const Text('Lokasi Kejadian/Penemuan'),
+                    subtitle: Text(item.location, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                  ),
+
+                  // 👤 PELAPOR
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.person, color: Colors.blueAccent),
+                    title: const Text('Dilaporkan Oleh'),
+                    subtitle: Text(item.userName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                  ),
+
+                  const Divider(),
+                  const SizedBox(height: 8),
+
+                  // 📄 DESKRIPSI LENGKAP
+                  const Text(
+                    'Deskripsi Laporan:',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    (item.description != null && item.description!.isNotEmpty)
+                        ? item.description!
+                        : 'Tidak ada deskripsi tambahan.',
+                    style: const TextStyle(fontSize: 15, color: Colors.black87, height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// 🏠 HOME SCREEN
 class HomeScreenWithRole extends StatefulWidget {
   final String currentUserRole;
   final int currentUserId; // 👈 Terima ID user yang login
@@ -333,6 +465,15 @@ class _HomeScreenWithRoleState extends State<HomeScreenWithRole> {
               return Card(
                 margin: const EdgeInsets.all(8),
                 child: ListTile(
+                  // 🚀 NAVIGASI KE ITEM DETAIL SCREEN SAAT CARD DIKLIK
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ItemDetailScreen(item: item),
+                      ),
+                    );
+                  },
                   leading: item.image != null && item.image!.isNotEmpty
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(8),
