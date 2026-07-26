@@ -55,7 +55,7 @@ class ItemController extends Controller
             'description' => $request->description,
             'location'    => $request->location,
             'image'       => $imagePath,
-            'status'      => 'active'
+            'status'      => 'pending'
         ]);
 
         // Format ulang response image agar langsung bisa dipakai Flutter
@@ -65,8 +65,8 @@ class ItemController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Laporan berhasil ditambahkan',
-            'data'    => $item
+            'message' => 'Laporan berhasil dibuat (Menunggu Verifikasi Admin)!',
+            'data'    => $item->load('user')
         ], 201);
     }
 
@@ -92,6 +92,31 @@ class ItemController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Laporan berhasil dihapus!'
+        ], 200);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,active,resolved',
+        ]);
+
+        $item = Item::find($id);
+
+        if (!$item) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Laporan tidak ditemukan!'
+            ], 404);
+        }
+
+        $item->status = $request->status;
+        $item->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status barang berhasil diperbarui!',
+            'data'    => $item
         ], 200);
     }
 

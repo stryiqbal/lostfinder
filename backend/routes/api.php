@@ -10,6 +10,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/items', [ItemController::class, 'index']);
 Route::post('/items', [ItemController::class, 'store']);
 Route::delete('/items/{id}', [ItemController::class, 'destroy']);
+Route::put('/items/{id}/status', [ItemController::class, 'updateStatus']);
 
 // 🟢 Langsung arahkan ke method getImage di ItemController
 Route::get('/items/image/{filename}', [ItemController::class, 'getImage']);

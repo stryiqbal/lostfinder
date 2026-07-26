@@ -48,6 +48,20 @@ class _HomeScreenWithRoleState extends State<HomeScreenWithRole> {
     });
   }
 
+  // Helper function untuk menentukan warna Chip sesuai status
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Colors.amber.shade700; // 🟡 Kuning/Oranye untuk Pending
+      case 'active':
+        return Colors.blue;          // 🔵 Biru untuk Active
+      case 'resolved':
+        return Colors.green;         // 🟢 Hijau untuk Resolved
+      default:
+        return Colors.grey;
+    }
+  }
+
   // 📝 Modal Dialog Form Tambah Laporan dengan Foto
   void _showAddItemDialog() {
     final titleController = TextEditingController();
@@ -240,14 +254,89 @@ class _HomeScreenWithRoleState extends State<HomeScreenWithRole> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Chip(label: Text(item.status)),
+                      // 🏷️ CHIP STATUS (Klik untuk Admin mengubah status)
+                      InkWell(
+                        onTap: widget.currentUserRole == 'admin'
+                            ? () async {
+                                String? selectedStatus =
+                                    await showDialog<String>(
+                                  context: context,
+                                  builder: (context) => SimpleDialog(
+                                    title: const Text('Ubah Status Laporan'),
+                                    children: [
+                                      SimpleDialogOption(
+                                        onPressed: () =>
+                                            Navigator.pop(context, 'pending'),
+                                        child: const Row(
+                                          children: [
+                                            Icon(Icons.hourglass_empty,
+                                                color: Colors.amber),
+                                            SizedBox(width: 10),
+                                            Text('🟡 Pending (Menunggu)'),
+                                          ],
+                                        ),
+                                      ),
+                                      SimpleDialogOption(
+                                        onPressed: () =>
+                                            Navigator.pop(context, 'active'),
+                                        child: const Row(
+                                          children: [
+                                            Icon(Icons.check_circle_outline,
+                                                color: Colors.blue),
+                                            SizedBox(width: 10),
+                                            Text('🔵 Active (Dipublikasi)'),
+                                          ],
+                                        ),
+                                      ),
+                                      SimpleDialogOption(
+                                        onPressed: () => Navigator.pop(
+                                            context, 'resolved'),
+                                        child: const Row(
+                                          children: [
+                                            Icon(Icons.task_alt,
+                                                color: Colors.green),
+                                            SizedBox(width: 10),
+                                            Text('🟢 Resolved (Selesai)'),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
 
-                      // 🔴 HANYA TAMPIL & BISA DIKLIK JIKA ROLE IS ADMIN
+                                if (selectedStatus != null &&
+                                    selectedStatus != item.status) {
+                                  final res = await ApiService.updateItemStatus(
+                                      item.id, selectedStatus);
+                                  if (res['success'] == true && mounted) {
+                                    _refreshItems();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(
+                                              'Status diubah menjadi $selectedStatus!')),
+                                    );
+                                  }
+                                }
+                              }
+                            : null,
+                        child: Chip(
+                          label: Text(
+                            item.status.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          backgroundColor: _getStatusColor(item.status),
+                        ),
+                      ),
+
+                      // 🔴 TOMBOL DELETE (Khusus Admin)
                       if (widget.currentUserRole == 'admin')
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
                           onPressed: () async {
-                            // Tampilkan konfirmasi hapus
                             bool confirm = await showDialog(
                                   context: context,
                                   builder: (context) => AlertDialog(
@@ -276,11 +365,11 @@ class _HomeScreenWithRoleState extends State<HomeScreenWithRole> {
                               final res =
                                   await ApiService.deleteItem(item.id);
                               if (res['success'] == true && mounted) {
-                                _refreshItems(); // Refresh tampilan list
+                                _refreshItems();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                      content: Text(
-                                          'Laporan berhasil dihapus!')),
+                                      content:
+                                          Text('Laporan berhasil dihapus!')),
                                 );
                               }
                             }

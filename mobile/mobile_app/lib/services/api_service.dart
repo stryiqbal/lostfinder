@@ -72,6 +72,16 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+  static Future<Map<String, dynamic>> updateItemStatus(int id, String newStatus) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/items/$id/status'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'status': newStatus}),
+    );
+
+    return jsonDecode(response.body);
+  }
+
   // 📝 FITUR TAMBAH BARANG BESERTA GAMBAR (MULTIPART)
   static Future<Map<String, dynamic>> addItemWithImage({
     required int userId,
