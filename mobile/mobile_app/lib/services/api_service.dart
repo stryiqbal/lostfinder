@@ -20,6 +20,13 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+  // --- API LOGOUT ---
+  static Future<bool> logout() async {
+    // Jika menggunakan Sanctum Token, di sini bisa kirim request POST ke '/api/logout'
+    // Namun untuk reset state di Flutter, cukup return true agar UI bisa bernavigasi balik ke LoginScreen
+    return true;
+  }
+
   // --- API REGISTER ---
   static Future<Map<String, dynamic>> register(
     String name,

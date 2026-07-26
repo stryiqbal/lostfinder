@@ -190,15 +190,59 @@ class _HomeScreenWithRoleState extends State<HomeScreenWithRole> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-            'LostFinder - (${widget.currentUserRole.toUpperCase()})'),
-        backgroundColor: widget.currentUserRole == 'admin'
-            ? Colors.redAccent
-            : Colors.blueAccent,
+        title: Text('LostFinder - (${widget.currentUserRole.toUpperCase()})'),
+        backgroundColor: widget.currentUserRole == 'admin' ? Colors.redAccent : Colors.blueAccent,
         actions: [
+          // 🔄 Tombol Refresh
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh), 
             onPressed: _refreshItems,
+            tooltip: 'Refresh Data',
+          ),
+
+          // 🚪 TOMBOL LOGOUT
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () async {
+              // Tampilkan konfirmasi Logout
+              bool confirm = await showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Konfirmasi Logout'),
+                  content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Batal'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      child: const Text('Logout'),
+                    ),
+                  ],
+                ),
+              ) ?? false;
+
+              if (confirm && mounted) {
+                // Memanggil method logout dari ApiService jika ada
+                await ApiService.logout();
+
+                if (mounted) {
+                  // Navigasi kembali ke LoginScreen dan hapus semua history stack halaman
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    (route) => false,
+                  );
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Berhasil keluar dari akun.')),
+                  );
+                }
+              }
+            },
           ),
         ],
       ),
@@ -312,8 +356,8 @@ class _HomeScreenWithRoleState extends State<HomeScreenWithRole> {
                                     _refreshItems();
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                          content: Text(
-                                              'Status diubah menjadi $selectedStatus!')),
+                                        content: Text(
+                                            'Status diubah menjadi $selectedStatus!')),
                                     );
                                   }
                                 }
