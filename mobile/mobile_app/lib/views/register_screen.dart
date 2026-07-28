@@ -18,9 +18,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _agreeToTerms = false;
+  
+  // Variabel untuk menyimpan pesan error inline
+  String? _errorMessage;
 
   // Palette Warna Material 3 / Tailwind Config
-  static const Color primaryColor = Color(0xFF005BBF);
   static const Color primaryContainer = Color(0xFF1A73E8);
   static const Color surfaceColor = Color(0xFFF8F9FA);
   static const Color surfaceContainerLowest = Color(0xFFFFFFFF);
@@ -31,19 +33,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
   static const Color borderColor = Color(0xFFDADCE0);
 
   void _handleRegister() async {
+    // Reset pesan error sebelumnya
+    setState(() => _errorMessage = null);
+
     if (!_formKey.currentState!.validate()) return;
 
     if (!_agreeToTerms) {
-      _showSnackBar(
-        'Anda harus menyetujui Syarat dan Ketentuan',
-        Colors.orange.shade800,
-        Icons.warning_amber_rounded,
-      );
+      setState(() {
+        _errorMessage = 'Anda harus menyetujui Syarat dan Ketentuan';
+      });
       return;
     }
 
     setState(() => _isLoading = true);
 
+    // Memanggil API Register
     final result = await ApiService.register(
       _fullNameController.text.trim(),
       _emailController.text.trim(),
@@ -55,6 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!mounted) return;
 
+    // Jika berhasil
     if (result['success'] == true) {
       _showSnackBar(
         'Registrasi Berhasil! Silakan Login.',
@@ -63,33 +68,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       Navigator.pop(context);
     } else {
-      _showSnackBar(
-        result['message'] ?? 'Registrasi Gagal',
-        const Color(0xFFBA1A1A),
-        Icons.error_outline,
-      );
+      // Jika error, tampilkan di banner error inline
+      setState(() {
+        _errorMessage = result['message'] ?? 'Nama atau Email sudah digunakan.';
+      });
     }
   }
 
   void _showSnackBar(String message, Color color, IconData icon) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            Icon(icon, color: Colors.white),
+            Icon(icon, color: Colors.white, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  color: Colors.white,
+                ),
               ),
             ),
           ],
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
+        elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        margin: const EdgeInsets.all(16),
+        margin: EdgeInsets.only(
+          bottom: 24,
+          left: MediaQuery.of(context).size.width > 480
+              ? (MediaQuery.of(context).size.width - 440) / 2
+              : 20,
+          right: MediaQuery.of(context).size.width > 480
+              ? (MediaQuery.of(context).size.width - 440) / 2
+              : 20,
+        ),
       ),
     );
   }
@@ -197,30 +215,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
+                              // --- BANNER ALERT ERROR INLINE (SEKARANG DITAROH DI ATAS FULL NAME) ---
+                              if (_errorMessage != null) ...[
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFDAD6),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFFBA1A1A).withOpacity(0.4),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.warning_amber_rounded,
+                                        color: Colors.orange.shade900,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          _errorMessage!,
+                                          style: TextStyle(
+                                            color: Colors.orange.shade900,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+
                               // Field Full Name
                               _buildInputField(
                                 controller: _fullNameController,
                                 label: 'Full Name',
-                                hint: 'Jane Doe',
+                                hint: 'Student Name',
                                 icon: Icons.person_outline,
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
                                     return 'Full Name is required';
                                   }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 16),
-
-                              // Field Campus ID
-                              _buildInputField(
-                                controller: _campusIdController,
-                                label: 'Campus ID',
-                                hint: '12345678',
-                                icon: Icons.badge_outlined,
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return 'Campus ID is required';
+                                  if (value.trim().length < 3) {
+                                    return 'Full Name minimal 3 karakter';
                                   }
                                   return null;
                                 },
@@ -230,8 +271,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               // Field Email
                               _buildInputField(
                                 controller: _emailController,
-                                label: 'University Email',
-                                hint: 'jane.doe@university.edu',
+                                label: 'Email',
+                                hint: 'student@gmail.com',
                                 icon: Icons.mail_outline,
                                 keyboardType: TextInputType.emailAddress,
                                 validator: (value) {
@@ -366,7 +407,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       // Footer Navigation to Login
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
                         decoration: const BoxDecoration(
                           color: surfaceContainerLowest,
                           border: Border(
@@ -383,8 +424,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 fontSize: 14,
                               ),
                             ),
-                            GestureDetector(
-                              onTap: () => Navigator.pop(context),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
                               child: const Text(
                                 'Log In',
                                 style: TextStyle(
@@ -398,7 +444,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     ],
-                  ),
+                  ),  
                 ),
               ),
             ),
@@ -408,7 +454,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // Custom Input Field sesuai Desain UI
+  // Custom Input Field
   Widget _buildInputField({
     required TextEditingController controller,
     required String label,
