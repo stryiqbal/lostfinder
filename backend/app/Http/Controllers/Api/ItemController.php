@@ -14,11 +14,16 @@ class ItemController extends Controller
     {
         $items = Item::with('user')->latest()->get();
 
-        // Transformasi URL gambar saja tanpa merusak struktur relasi 'user'
+        // Transformasi URL gambar dan user photo agar Flutter menerima URL yang benar
         $items->transform(function ($item) {
             if ($item->image) {
                 $item->image = url('api/items/image/' . basename($item->image));
             }
+
+            if ($item->user) {
+                $item->user->setAttribute('photo_url', $item->user->photo ? url('api/storage/' . $item->user->photo) : null);
+            }
+
             return $item;
         });
 

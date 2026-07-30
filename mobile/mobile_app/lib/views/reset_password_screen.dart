@@ -118,7 +118,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: onSurface,
-                  fontFamily: 'Inter',
                 ),
               ),
               const SizedBox(height: 8),
@@ -131,7 +130,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   fontSize: 14,
                   color: onSurfaceVariant,
                   height: 1.4,
-                  fontFamily: 'Inter',
                 ),
               ),
               const SizedBox(height: 24),
@@ -157,7 +155,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      fontFamily: 'Inter',
                     ),
                   ),
                 ),
@@ -210,7 +207,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: onSurface,
-                      fontFamily: 'Inter',
                     ),
                   ),
                 ],
@@ -236,7 +232,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             fontSize: 14,
                             color: onSurfaceVariant,
                             height: 1.42,
-                            fontFamily: 'Inter',
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -270,7 +265,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
                                       color: onErrorContainer,
-                                      fontFamily: 'Inter',
+
                                     ),
                                   ),
                                 ),
@@ -357,7 +352,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
-                                          fontFamily: 'Inter',
                                         ),
                                       ),
                               ),
@@ -393,7 +387,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             fontWeight: FontWeight.w500,
             color: onSurface,
             letterSpacing: 0.6,
-            fontFamily: 'Inter',
           ),
         ),
         const SizedBox(height: 6),
@@ -403,14 +396,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           style: const TextStyle(
             fontSize: 14,
             color: onSurface,
-            fontFamily: 'Inter',
           ),
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: const TextStyle(
               color: outlineColor,
               fontSize: 14,
-              fontFamily: 'Inter',
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,

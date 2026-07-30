@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import '../main.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -58,13 +58,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (result['success'] == true) {
       final userData = result['data'];
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Selamat Datang, ${userData['name']}!'),
-          backgroundColor: const Color(0xFF006D2C),
-        ),
-      );
 
       Navigator.pushReplacement(
         context,

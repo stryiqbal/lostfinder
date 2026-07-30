@@ -340,7 +340,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         style: TextStyle(
                                           fontSize: 14,
                                           color: onSurfaceVariant,
-                                          fontFamily: 'Inter',
                                         ),
                                         children: [
                                           TextSpan(text: 'I agree to the '),

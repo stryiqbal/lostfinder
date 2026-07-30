@@ -145,7 +145,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             fontWeight: FontWeight.w600,
                             color: onSurface,
                             letterSpacing: -0.24,
-                            fontFamily: 'Inter',
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -160,7 +159,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               fontSize: 16, // body-lg
                               color: onSurfaceVariant,
                               height: 1.5,
-                              fontFamily: 'Inter',
                             ),
                           ),
                         ),
@@ -195,7 +193,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
                                       color: onErrorContainer,
-                                      fontFamily: 'Inter',
                                     ),
                                   ),
                                 ),
@@ -216,7 +213,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 fontWeight: FontWeight.w500,
                                 color: onSurface,
                                 letterSpacing: 0.6,
-                                fontFamily: 'Inter',
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -228,14 +224,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               style: const TextStyle(
                                 fontSize: 16,
                                 color: onSurface,
-                                fontFamily: 'Inter',
                               ),
                               decoration: InputDecoration(
                                 hintText: 'student@gmail.com',
                                 hintStyle: const TextStyle(
                                   color: outlineColor,
                                   fontSize: 16,
-                                  fontFamily: 'Inter',
                                 ),
                                 prefixIcon: const Icon(
                                   Icons.mail_outline_rounded,
@@ -296,7 +290,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     style: TextStyle(
                                       fontSize: 18, // title-md
                                       fontWeight: FontWeight.w600,
-                                      fontFamily: 'Inter',
                                     ),
                                   ),
                           ),
@@ -330,7 +323,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                       fontSize: 14, // body-md
                                       fontWeight: FontWeight.w500,
                                       color: primaryColor,
-                                      fontFamily: 'Inter',
+
                                     ),
                                   ),
                                 ],
